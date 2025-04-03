@@ -16,7 +16,7 @@ class SignInScreen extends StatelessWidget {
               color: Color(0xFF2E2E2E), // Dark grey background
               child: Center(
                 child: Image.asset(
-                    '/Users/saradeshmukh/Documents/RUPlanner-1/frontend/lib/assets/images/ds.png',
+                    '/Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/ds.png',
                     height: 80,
                   ),
               ),
@@ -76,7 +76,7 @@ class SignInScreen extends StatelessWidget {
                   SizedBox(height: 20),
                   OutlinedButton.icon(
                     onPressed: () {},
-                    icon: Image.asset('/Users/saradeshmukh/Documents/RUPlanner-1/frontend/lib/assets/images/google.png',
+                    icon: Image.asset('/Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/google.png',
                         height: 20),
                     label: Text('Continue with Google'),
                     style: OutlinedButton.styleFrom(

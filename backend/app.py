@@ -10,7 +10,8 @@ app = Flask(__name__)
 CORS(app) # connecting the frontend to the backend
 
 # creating the client
-client = MongoClient('mongodb://localhost:27017/')
+url = "mongodb://localhost:27017/"
+client = MongoClient(url) # with unique url
 db = client['authndb']
 users_collection = db['users']
 
