@@ -1,8 +1,39 @@
 import 'package:flutter/material.dart';
 import '../widgets/rounded_button.dart';
 import 'package:flutter/gestures.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class SignUpScreen extends StatelessWidget {
+class SignUpScreen extends StatefulWidget{
+  @override
+  _SignUpScreenState createState() => _SignUpScreenState();
+}
+
+class _SignUpScreenState extends State<SignUpScreen> {
+
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  String message = '';
+
+  Future<void> signup(BuildContext context) async {
+    final response = await http.post(
+      Uri.parse('http://127.0.0.1:5000/signup'),  // Replace with your Flask server URL
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        'username': _usernameController.text,
+        'password': _passwordController.text,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      Navigator.pushNamed(context, '/home');  // ✅ Navigate to Home on successful signup
+    } else {
+      setState(() {
+        message = jsonDecode(response.body)['message'];
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,6 +82,7 @@ class SignUpScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 20),
                   TextField(
+                    controller: _usernameController,
                     decoration: InputDecoration(
                       hintText: 'Username',
                       border: OutlineInputBorder(
@@ -62,6 +94,7 @@ class SignUpScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 20),
                   TextField(
+                    controller: _passwordController,
                     decoration: InputDecoration(
                       hintText: 'Password',
                       border: OutlineInputBorder(
@@ -75,9 +108,10 @@ class SignUpScreen extends StatelessWidget {
                   SizedBox(height: 20),
                   RoundedButton(
                     text: 'Create Account',
-                    press: () {
+                    press: () => signup(context),
+                    //press: () {
                       // Handle Sign Up logic
-                    },
+                   // },
                   ),
                   SizedBox(height: 20),
                   Center(

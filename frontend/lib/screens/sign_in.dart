@@ -1,8 +1,39 @@
 import 'package:flutter/material.dart';
 import '../widgets/rounded_button.dart';
 import 'package:flutter/gestures.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class SignInScreen extends StatelessWidget {
+class SignInScreen extends StatefulWidget{
+  @override
+  _SignInScreenState createState() => _SignInScreenState();
+}
+
+class _SignInScreenState extends State<SignInScreen> {
+
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  String message = '';
+
+  Future<void> login(BuildContext context) async {
+    final response = await http.post(
+      Uri.parse('http://127.0.0.1:5000/login'),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        'username': _usernameController.text,
+        'password': _passwordController.text,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      setState(() {
+        message = jsonDecode(response.body)['message'];
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,6 +65,7 @@ class SignInScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 20),
                   TextField(
+                    controller: _usernameController,
                     decoration: InputDecoration(
                       hintText: 'Username',
                       border: OutlineInputBorder(
@@ -45,6 +77,7 @@ class SignInScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 20),
                   TextField(
+                    controller: _passwordController,
                     decoration: InputDecoration(
                       hintText: 'Password',
                       border: OutlineInputBorder(
@@ -58,10 +91,11 @@ class SignInScreen extends StatelessWidget {
                   SizedBox(height: 20),
                   RoundedButton(
                     text: 'Sign in',
-                    press: () {
+                    press: () => login(context),
+                    //press: () {
                       // Implement your login logic
-                      Navigator.pushNamed(context, '/home'); // Redirect to Home Screen
-                    },
+                      //Navigator.pushNamed(context, '/home'); // Redirect to Home Screen
+                    //},
                   ),
                   SizedBox(height: 10),
                   Center(

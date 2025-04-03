@@ -30,6 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  http: ^0.13.5
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -63,13 +64,13 @@ flutter:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
   assets:
-    - /Users/saradeshmukh/Documents/RUPlanner-1/frontend/lib/assets/images/logoschedule.png
-    - /Users/saradeshmukh/Documents/RUPlanner-1/frontend/lib/assets/images/google.png
-    - /Users/saradeshmukh/Documents/RUPlanner-1/frontend/lib/assets/images/schedule_icon.png
-    - /Users/saradeshmukh/Documents/RUPlanner-1/frontend/lib/assets/images/map_icon.png
-    - /Users/saradeshmukh/Documents/RUPlanner-1/frontend/lib/assets/images/dining_icon.png
-    - /Users/saradeshmukh/Documents/RUPlanner-1/frontend/lib/assets/images/ds.png
-    - /Users/saradeshmukh/Documents/RUPlanner-1/frontend/lib/assets/images/home_icon.png
+    - /Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/logoschedule.png
+    - /Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/google.png
+    - /Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/schedule_icon.png
+    - /Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/map_icon.png
+    - /Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/dining_icon.png
+    - /Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/ds.png
+    - /Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/home_icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
