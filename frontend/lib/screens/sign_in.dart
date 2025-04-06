@@ -28,6 +28,8 @@ class _SignInScreenState extends State<SignInScreen> {
     if (response.statusCode == 200) {
       Navigator.pushReplacementNamed(context, '/home');
     } else {
+      final responsebody = jsonDecode(response.body);
+      print(responsebody['message']);
       setState(() {
         message = jsonDecode(response.body)['message'];
       });

@@ -27,11 +27,33 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     if (response.statusCode == 201) {
       Navigator.pushNamed(context, '/home');  // ✅ Navigate to Home on successful signup
-    } else {
+    }
+    else if (response.statusCode == 400){
+      final responsebody = jsonDecode(response.body);
+      _showSnackbar(context, responsebody['message'], isSuccess: false); // not a success
+      setState(() {
+        message = responsebody['message'];  // Display message on the screen as well
+      });
+    }
+    else {
       setState(() {
         message = jsonDecode(response.body)['message'];
       });
     }
+  }
+
+  // to get a pop-up to show whether or not the user needs to include another username or password
+  void _showSnackbar(BuildContext context, String message, {required bool isSuccess}) {
+    final snackBar = SnackBar(
+      content: Text(
+        message,
+        style: TextStyle(color: Colors.white),
+      ),
+      backgroundColor: isSuccess ? Colors.green : Colors.red, // change to work with the theme 
+      duration: Duration(seconds: 3),  // Automatically disappears after 3 seconds
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);  // ✅ Display the Snackbar
   }
 
   @override
