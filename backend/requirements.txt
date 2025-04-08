@@ -1,2 +1,5 @@
 selenium
 dotenv
+ics
+bs4
+requests
