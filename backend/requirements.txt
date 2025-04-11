@@ -7,3 +7,6 @@ google-generativeai
 google-api-python-client
 google-auth-oauthlib
 google-auth-httplib2
+ics
+bs4
+requests

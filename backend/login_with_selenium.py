@@ -42,10 +42,11 @@ def wait_for_redirects_to_finish(driver, max_wait=30, check_interval=0.5):
     # Timeout reached
     return False
 
-URL = {
+SERVICE = {
     'cas': 'https://cas.rutgers.edu',
-    'dn': 'https://dn.rutgers.edu',
-    'webreg': 'https://sims.rutgers.edu/webreg/chooseSemester.htm?login=cas'
+    'dn': 'https://cas.rutgers.edu/login?renew=true&service=https://dn.rutgers.edu/Default.aspx/',
+    'webreg': 'https://sims.rutgers.edu/webreg/chooseSemester.htm?login=cas',
+    'my': 'https://cas.rutgers.edu/login?service=https://my.rutgers.edu/casShell/ngLogin'
 }
 
 # Gets the user login from .env, if present
@@ -61,19 +62,23 @@ def get_user_login():
 
 # Reads the user cookies from cookies.json, if present
 def read_user_cookies(username):
+    # Try reading the cookies; if no cookies, return None
     try:
-        with open(f"{username}_cookies.json", "r") as file:
+        with open(f"{username}/cookies.json", "r") as file:
             return json.load(file)
     except FileNotFoundError:
         return None  # no cookies.json file
 
 # Writes the user cookies to cookies.json
 def write_user_cookies(username, cookies_dict):
-    with open(f"{username}_cookies.json", "w") as file:
+    # Make {username} directory if it doesn't already exist
+    os.makedirs(f"{username}", exist_ok=True)
+    # Write cookies to the directory
+    with open(f"{username}/cookies.json", "w") as file:
         json.dump(cookies_dict, file, indent=2)
 
 # Checks if the driver is authenticated
-def is_authenticated(driver, log=False, website_url=URL['cas']):
+def is_authenticated(driver, log=False, website_url=SERVICE['cas']):
     driver.get(website_url)  # reload the page to see if login was successful
     try:
         driver.find_element(By.CLASS_NAME, "accesskey").text
@@ -82,7 +87,7 @@ def is_authenticated(driver, log=False, website_url=URL['cas']):
         return True   # authentication succeeded
 
 # Given cookies, authenticates the user
-def can_authenticate_with_cookies(driver, username, log=False, website_url=URL['cas']):
+def can_authenticate_with_cookies(driver, username, log=False, website_url=SERVICE['cas']):
     driver.delete_all_cookies()
     driver.get(website_url)  # load the webpage
 
@@ -98,7 +103,7 @@ def can_authenticate_with_cookies(driver, username, log=False, website_url=URL['
         driver.delete_all_cookies()  # cookies are incorrect; delete them
         return False
 
-def authenticate_service(driver, user=None, username=None, log=False, website_url=URL['cas']):
+def authenticate_service(driver, user=None, username=None, log=False, website_url=SERVICE['cas']):
     """
     Authenticates the user into the Rutgers service given by the website_url.
     First, tries to authenticate with cookies, if they exist. If the cookies
@@ -253,51 +258,59 @@ def get_user_cas_data(driver, log=False):
     
     return user_profile
 
-# Run a web scraping function
-def scrape(fn, username=None, log=False, website_url=URL['cas']):
-    # Load environment variables
+def scrape(fn, username=None, log=False, website_url=SERVICE['cas'], **kwargs):
+    """
+    Run a Selenium-based web scraping function within an authenticated Rutgers CAS session.
+
+    Parameters:
+    - fn (function): The scraping function to execute. Must accept (driver,
+    username, log) plus any additional kwargs.
+    - username (str, optional): NetID username. If not provided, it will be
+    loaded via get_user_login().
+    - log (bool, optional): Whether to log debug output during authentication
+    and scraping. Defaults to False.
+    - website_url (str, optional): URL for CAS-protected page to check
+    authentication. Defaults to CAS login URL.
+    - **kwargs: Arbitrary keyword arguments to pass to the scraping function `fn`.
+
+    Returns:
+    - output (Any): The return value from the scraping function `fn`.
+    """
+
+    # Load environment variables (e.g., for login credentials)
     load_dotenv()
     user_login = None
-    if not username: user_login = get_user_login()
-    
-    # Set up Chrome options
+
+    # If username is not provided, get it from stored user login
+    if not username:
+        user_login = get_user_login()
+
+    # Set up Chrome browser options
     chrome_options = Options()
-    # Uncomment the line below to run in headless mode
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--window-size=1280,720")
-    # chrome_options.add_argument("--headless")  # Enables headless mode
-    
-    # Initialize the WebDriver
+    chrome_options.add_argument("--headless")              # Enables headless mode (no browser window)
+    chrome_options.add_argument("--window-size=1280,720")  # Sets window size to ensure full page loads
+
+    # Initialize Selenium WebDriver
     driver = webdriver.Chrome(options=chrome_options)
-    
+    output = None  # Placeholder for the function result
+
     try:
-        # Authenticate the user if not already authenticated
-        if user_login and not username: username = user_login['username']
+        # If no username provided, extract it from user_login
+        if user_login and not username:
+            username = user_login['username']
+
+        # If not already logged in to CAS, perform authentication
         if not is_authenticated(driver, website_url=website_url):
-            authenticated_driver, _ = authenticate_service(driver, user=user_login,
-                                       username=username, log=True)
-            if authenticated_driver == False or authenticated_driver == None:
-                raise SystemExit
-        # Run the web scraping function
-        fn(driver, username, log=log)
-            
+            authenticated_driver, _ = authenticate_service(
+                driver, user=user_login, username=username, log=True
+            )
+            if authenticated_driver is False or authenticated_driver is None:
+                raise SystemExit  # Stop execution if authentication fails
+
+        # Call the scraping function with the prepared driver and credentials
+        output = fn(driver, username, log=log, **kwargs)
+
     finally:
-        # Close the browser
+        # Always quit the browser, even if errors occur
         driver.quit()
-
-# Demo function
-def my_scraping_function(driver, username, log):
-    # Build initial user profile via CAS using user login from .env
-    user_profile = get_user_cas_data(driver, log)
-    print(user_profile)
-    # Go to my.rutgers.edu and wait for page to load
-    driver.get("https://cas.rutgers.edu/login?service=https://my.rutgers.edu/casShell/ngLogin")
-    time.sleep(5)  # wait for the page to load internally
-    driver.save_screenshot(os.path.join(os.getcwd(), f"{username}_dashboard.png"))
-
-def main():
-    # Run scrape with a lambda function
-    scrape(my_scraping_function, username="pr572")
-
-if __name__ == "__main__":
-    main()
+        # return output
