@@ -6,6 +6,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import time
 import os
+from pymongo import MongoClient
+from werkzeug.security import generate_password_hash
 from dotenv import load_dotenv
 import json
 
@@ -255,7 +257,26 @@ def get_user_cas_data(driver, log=False):
             
         value = value_element.text[1:-1]  # Remove quotes
         user_profile[attr] = value
-    
+        #added by Varshini starts: to create a user schema once they log in for first time
+        # Check if user exists in MongoDB; if not, create a new one
+    load_dotenv()
+    client = MongoClient(os.getenv("MONGO_URI"))
+    db = client["rumad"]
+    users = db["users"]
+
+    netid = user_profile.get("netID")
+    if netid and not users.find_one({"netid": netid}):
+        print(f"[MongoDB] Creating new user record for {netid}")
+        users.insert_one({
+            "netid": netid,
+            "password_hash": generate_password_hash("placeholder123"),  # Replace later
+            "current_schedule": "",
+            "past_schedules": [],
+            "prompt_history": [],
+            "friends": {}  # maps friend's netid -> latest .ics string
+        })
+
+        #added by Varshini ends
     return user_profile
 
 def scrape(fn, username=None, log=False, website_url=SERVICE['cas'], **kwargs):
