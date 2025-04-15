@@ -1,3 +1,4 @@
+from urllib.parse import quote_plus
 from flask import Flask, request, jsonify
 from pymongo import MongoClient 
 from flask_cors import CORS
@@ -5,6 +6,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 import os
 import certifi
+from pymongo.server_api import ServerApi
+
 from schedule_utils import (
     get_user_by_netid, update_prompt_history,
     update_current_schedule, confirm_schedule_update,
@@ -14,15 +17,23 @@ from llm_handler import update_schedule_from_prompt
 
 
 # === Setup ===
-load_dotenv()
+
 app = Flask(__name__)
 CORS(app)
 
+#username = quote_plus('<sanikadeshmukh135>') # encoding the username and password
+#password = quote_plus('<Snehnil16>')
+
+
 username = "sanikadeshmukh135"
 password = "Snehnil16"
-uri = f'mongodb+srv://{username}:{password}@cluster1.jo3fsmz.mongodb.net/?retryWrites=true&w=majority'
+#uri = f'mongodb+srv://{username}:{password}@cluster1.jo3fsmz.mongodb.net/?retryWrites=true&w=majority'
 
-client = MongoClient(uri, tls=True, tlsCAFile=certifi.where())
+url = 'mongodb+srv://' + username + ':' + password + '@' + 'cluster1.jo3fsmz.mongodb.net/?retryWrites=true&w=majority'
+#&appName=Cluster1'
+#'&tlsAllowInvalidCertificates=true'
+
+client = MongoClient(url, tls=True, tlsCAFile=certifi.where(), server_api=ServerApi('1'))
 db = client['authndb']
 users_collection = db['users']
 
@@ -130,7 +141,8 @@ def update_friend():
 @app.route('/get_user', methods=['GET'])
 def get_user():
     netid = request.args.get('netid')
-    user = get_user_by_netid(netid)
+    user = users_collection.find_one({'netid': netid})
+
     if user:
         user["_id"] = str(user["_id"])  # Convert ObjectId to string
         return jsonify({'status': 'success', 'user': user})

@@ -1,14 +1,30 @@
 # ✅ Updated schedule_utils.py (ICS-only backend logic)
 
+
 from pymongo import MongoClient
 from datetime import datetime
 import os
 from dotenv import load_dotenv
 from ics import Calendar, Event
+from pymongo import MongoClient 
+from flask_cors import CORS
+import certifi
+from pymongo.server_api import ServerApi
 
-load_dotenv()
-client = MongoClient(os.getenv("MONGO_URI"))
-db = client["rumad"]
+
+#load_dotenv()
+#client = MongoClient(os.getenv("MONGO_URI"))
+username = "sanikadeshmukh135"
+password = "Snehnil16"
+#uri = f'mongodb+srv://{username}:{password}@cluster1.jo3fsmz.mongodb.net/?retryWrites=true&w=majority'
+
+url = 'mongodb+srv://' + username + ':' + password + '@' + 'cluster1.jo3fsmz.mongodb.net/?retryWrites=true&w=majority'
+#&appName=Cluster1'
+#'&tlsAllowInvalidCertificates=true'
+
+client = MongoClient(url, tls=True, tlsCAFile=certifi.where(), server_api=ServerApi('1'))
+
+db = client["authndb"]
 users = db["users"]
 
 # 🔍 Fetch user document from MongoDB by NetID
@@ -96,10 +112,9 @@ def merge_schedule(netid, incoming_entries):
             for e in c.events:
                 parsed_schedule.append({
                     "commitment": e.name,
-                    "location": e.location,
                     "day": e.begin.format("dddd"),
-                    "start_time": e.begin.format("HH:mm"),
-                    "end_time": e.end.format("HH:mm")
+                    "start_time": e.begin.format("YYYY-MM-DD"),
+                    "end_time": e.end.format("YYYY-MM-DD")
                 })
         except:
             pass
