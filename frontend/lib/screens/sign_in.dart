@@ -49,7 +49,7 @@ class _SignInScreenState extends State<SignInScreen> {
               color: Color(0xFF2E2E2E), // Dark grey background
               child: Center(
                 child: Image.asset(
-                    '/Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/ds.png',
+                    '/Users/saradeshmukh/Desktop/RUPlanner-1/frontend/lib/assets/images/ds.png',
                     height: 80,
                   ),
               ),
@@ -93,11 +93,11 @@ class _SignInScreenState extends State<SignInScreen> {
                   SizedBox(height: 20),
                   RoundedButton(
                     text: 'Sign in',
-                    press: () => login(context),
-                    //press: () {
+                    //press: () => login(context),
+                    press: () {
                       // Implement your login logic
-                      //Navigator.pushNamed(context, '/home'); // Redirect to Home Screen
-                    //},
+                      Navigator.pushNamed(context, '/progress-auth'); // Redirect to Home Screen
+                    },
                   ),
                   SizedBox(height: 10),
                   Center(
@@ -112,7 +112,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   SizedBox(height: 20),
                   OutlinedButton.icon(
                     onPressed: () {},
-                    icon: Image.asset('/Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/google.png',
+                    icon: Image.asset('/Users/saradeshmukh/Desktop/RUPlanner-1/frontend/lib/assets/images/google.png',
                         height: 20),
                     label: Text('Continue with Google'),
                     style: OutlinedButton.styleFrom(

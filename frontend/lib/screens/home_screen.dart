@@ -1,6 +1,27 @@
 import 'package:flutter/material.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 0; // 0 = Home, 1 = Schedules, 2 = DynaChat
+
+  void _onItemTapped(int index) {
+    if (index == _selectedIndex) return;
+
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    if (index == 1) {
+      Navigator.pushNamed(context, '/schedules');
+    } else if (index == 2) {
+      Navigator.pushNamed(context, '/dynachat');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -9,7 +30,8 @@ class HomeScreen extends StatelessWidget {
         elevation: 0,
         title: Text(
           'DynaSched',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 28),
+          style: TextStyle(
+              color: Colors.black, fontWeight: FontWeight.bold, fontSize: 28),
         ),
         actions: [
           IconButton(
@@ -45,16 +67,16 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Schedules'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Maps'),
-          BottomNavigationBarItem(icon: Icon(Icons.restaurant), label: 'Dining'),
-        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
-        onTap: (index) {
-          // Handle navigation based on the selected index
-        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.calendar_today), label: 'Schedules'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.chat_bubble), label: 'DynaChat'),
+        ],
       ),
     );
   }
@@ -69,7 +91,8 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(title,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           SizedBox(height: 10),
           Row(
             children: [
@@ -103,10 +126,11 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(title,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           SizedBox(height: 10),
           SizedBox(
-            height: 200, // Scrollable Area Height
+            height: 200,
             child: Scrollbar(
               thumbVisibility: false,
               child: ListView.builder(
@@ -125,3 +149,4 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
+

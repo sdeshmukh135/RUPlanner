@@ -31,6 +31,10 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^0.13.5
+  table_calendar: ^3.0.9
+  googleapis: ^11.0.0
+  googleapis_auth: ^1.4.0
+  url_launcher: ^6.2.2
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -64,13 +68,14 @@ flutter:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
   assets:
-    - /Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/logoschedule.png
-    - /Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/google.png
-    - /Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/schedule_icon.png
-    - /Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/map_icon.png
-    - /Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/dining_icon.png
-    - /Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/ds.png
-    - /Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/home_icon.png
+    - /Users/saradeshmukh/Desktop/RUPlanner-1/frontend/lib/assets/images/logoschedule.png
+    - /Users/saradeshmukh/Desktop/RUPlanner-1/frontend/lib/assets/images/google.png
+    - /Users/saradeshmukh/Desktop/RUPlanner-1/frontend/lib/assets/images/schedule_icon.png
+    - /Users/saradeshmukh/Desktop/RUPlanner-1/frontend/lib/assets/images/map_icon.png
+    - /Users/saradeshmukh/Desktop/RUPlanner-1/frontend/lib/assets/images/dining_icon.png
+    - /Users/saradeshmukh/Desktop/RUPlanner-1/frontend/lib/assets/images/ds.png
+    - /Users/saradeshmukh/Desktop/RUPlanner-1/frontend/lib/assets/images/home_icon.png
+    - /Users/saradeshmukh/Desktop/RUPlanner-1/frontend/lib/assets/schedules/schedule.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

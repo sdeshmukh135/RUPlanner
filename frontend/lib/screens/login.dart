@@ -21,7 +21,7 @@ class LoginScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Image.asset(
-                    '/Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/logoschedule.png',
+                    '/Users/saradeshmukh/Desktop/RUPlanner-1/frontend/lib/assets/images/logoschedule.png',
                     height: 150,
                   ),
                   SizedBox(height: 20),

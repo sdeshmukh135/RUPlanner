@@ -69,7 +69,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               color: Color(0xFF2E2E2E),
               child: Center(
                 child: Image.asset(
-                    '/Users/sanikadeshmukh/Desktop/VSCodeProjects/RUPlanner/frontend/lib/assets/images/ds.png',
+                    '/Users/saradeshmukh/Desktop/RUPlanner-1/frontend/lib/assets/images/ds.png',
                     height: 80,
                   ),
               ),
@@ -130,10 +130,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   SizedBox(height: 20),
                   RoundedButton(
                     text: 'Create Account',
-                    press: () => signup(context),
-                    //press: () {
+                    //press: () => signup(context),
+                    press: () {
                       // Handle Sign Up logic
-                   // },
+                      Navigator.pushNamed(context, '/progress-auth');
+                    },
                   ),
                   SizedBox(height: 20),
                   Center(
