@@ -1,12 +1,8 @@
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time as time_module
 import json
 import re
-import os
-import login_with_selenium as login
 from ics import Calendar, Event
 from ics.grammar.parse import ContentLine
 from datetime import datetime, time, timedelta
@@ -53,7 +49,6 @@ def select_webreg_semester(driver, semester):
             input_element = li.find_element(By.TAG_NAME, "input")
             input_element.click()
             return
-    print("Success")
     raise ValueError(f"Semester '{semester}' not found in the semester selection list.")
 
 def webreg_schedule_view_table(driver, username, semester="Fall 2025", log=False):
@@ -83,9 +78,12 @@ def webreg_schedule_view_table(driver, username, semester="Fall 2025", log=False
     WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "h2")))
     driver.get("https://sims.rutgers.edu/webreg/viewScheduleByCourse.htm")
 
-    # Extract semester from page header
+    # Extract semester from page header and ensure that it is valid
     h2_text = driver.find_element(By.CSS_SELECTOR, "h2").text.strip()
     semester_text = h2_text.split("»")[-1].strip()  # e.g., "Fall 2025"
+    if not any(s in semester_text.split()[0] for s in ["Winter", "Spring", "Summer", "Fall"]):
+        if log: print (f"Semester '{semester}' no longer accessible.")  # something went wrong
+        return None
 
     # Locate all course blocks within the new HTML structure
     course_blocks = driver.find_elements(By.CSS_SELECTOR, "div.list-course table tbody")
@@ -130,8 +128,7 @@ def webreg_schedule_view_table(driver, username, semester="Fall 2025", log=False
                     time_str = tds[1].text.strip()
 
                     if " - " not in time_str:
-                        if log:
-                            print(f"[WARN] Malformed time string in {title}: '{time_str}'")
+                        if log: print(f"[WARN] Malformed time string in {title}: '{time_str}'")
                         continue
 
                     start_str, end_str = time_str.split(" - ")
@@ -168,18 +165,9 @@ def webreg_schedule_view_table(driver, username, semester="Fall 2025", log=False
         "courses": courses
     }
 
-    # Save to JSON file
-    json_filename = f"{username}/{semester_code(semester)}_schedule.json"
-    with open(json_filename, "w") as f:
-        json.dump(schedule_data, f, indent=2)
-    if log: print(f"Saved schedule to {json_filename}.")
-
     return schedule_data
 
 def get_current_semester(driver, log=False):
-    user_profile = login.get_user_cas_data(driver, log)
-    if log: print(user_profile)
-
     driver.get("https://sims.rutgers.edu/webreg/chooseSemester.htm?login=cas")
     driver.find_element(By.CLASS_NAME, "btn-submit").click()
     
@@ -239,8 +227,7 @@ def webreg_schedule_register_table(driver, username, semester, log=False):
                 time_str = m.find_element(By.CLASS_NAME, "timestring3").text
 
                 if " - " not in time_str:
-                    if log:
-                        print(f"[WARN] Malformed time string in {title}: '{time_str}'")
+                    if log: print(f"[WARN] Malformed time string in {title}: '{time_str}'")
                     continue
 
                 start_str, end_str = time_str.split(" - ")
@@ -277,21 +264,23 @@ def webreg_schedule_register_table(driver, username, semester, log=False):
         "courses": courses
     }
 
-    # Save to JSON file
-    json_filename = f"{username}/{semester_code(semester)}_schedule.json"
-    with open(json_filename, "w") as f:
-        json.dump(schedule_data, f, indent=2)
-    if log: print(f"Saved schedule to {json_filename}.")
-
     return schedule_data
 
-def webreg_schedule(driver, username, semester="Fall 2025", log=False):
-    semester_text = get_current_semester(driver, log=False)
+def webreg_schedule(driver, username, semester="Fall 2025", log=False, save=False):
+    semester_text = get_current_semester(driver, log=log)
     schedule_data = {}  # empty JSON object
     if semester_text == semester:  # current semester matches
         schedule_data = webreg_schedule_register_table(driver, username, semester, log=log)
     else:  # assuming the semester matches "Fall 2025" format
         schedule_data = webreg_schedule_view_table(driver, username, semester, log=log)
+    
+    # Save to JSON file, if requested
+    if save:
+        json_filename = f"./.users/{username}/{semester_code(semester)}_schedule.json"
+        with open(json_filename, "w") as f:
+            json.dump(schedule_data, f, indent=2)
+        if log: print(f"Saved schedule to {json_filename}.")
+    
     return schedule_data
 
 
@@ -328,7 +317,7 @@ def generate_vtimezone_block():
         "END:VTIMEZONE\n"
     )
 
-def convert_webreg_json_to_ics(json_path, ics_output_path):
+def convert_webreg_json_to_ics(schedule_data, ics_output_path, log=False):
     """
     Convert a Rutgers WebReg schedule JSON file into an iCalendar (.ics) file.
 
@@ -339,7 +328,7 @@ def convert_webreg_json_to_ics(json_path, ics_output_path):
     calendar applications.
 
     Args:
-        json_path (str): Path to the input JSON file containing the WebReg schedule.
+        schedule_data (str): Input JSON object containing the WebReg schedule.
         ics_output_path (str): Path where the output .ics file will be saved.
 
     Raises:
@@ -348,7 +337,7 @@ def convert_webreg_json_to_ics(json_path, ics_output_path):
         json.JSONDecodeError: If the JSON file is malformed.
 
     Examples:
-        >>> convert_webreg_json_to_ics(f"am3606_schedule.json", "am3606_schedule.ics")
+        >>> convert_webreg_json_to_ics(schedule_data, "am3606_schedule.ics")
         .ics calendar saved to: am3606_schedule.ics
     """
     from_zone = ZoneInfo("America/New_York")  # Use US Eastern Time for event times
@@ -364,10 +353,6 @@ def convert_webreg_json_to_ics(json_path, ics_output_path):
         "Sunday": 6
     }
 
-    # Load the user's schedule JSON
-    with open(json_path, "r") as f:
-        schedule_data = json.load(f)
-
     semester = schedule_data.get("semester")
     calendar = Calendar()
     courses = schedule_data["courses"]
@@ -375,7 +360,8 @@ def convert_webreg_json_to_ics(json_path, ics_output_path):
     # Get the start and end of the semester
     semester_info = ACADEMIC_CALENDAR.get(semester)
     if not semester_info:
-        raise ValueError(f"Semester '{semester}' not found in academic calendar.")
+        if log: print (f"Semester '{semester}' not found in academic calendar.")
+        return
 
     # Set semester start and end as timezone-aware dates
     semester_start = datetime.strptime(semester_info["start"], "%Y-%m-%d").replace(tzinfo=from_zone)
@@ -450,11 +436,11 @@ def convert_webreg_json_to_ics(json_path, ics_output_path):
             calendar.events.add(e)
 
     # Write calendar with VTIMEZONE prepended manually
-    ical_body = str(calendar)
+    ical_body = calendar.serialize()
     vtimezone = generate_vtimezone_block()
     ical_with_timezone = ical_body.replace("BEGIN:VEVENT", f"{vtimezone}BEGIN:VEVENT", 1)
 
     with open(ics_output_path, "w") as f:
         f.write(ical_with_timezone)
 
-    print(f".ics calendar saved to: {ics_output_path}")
+    if log: print(f".ics calendar saved to: {ics_output_path}")

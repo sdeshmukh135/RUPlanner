@@ -18,7 +18,7 @@ client = MongoClient(os.getenv("MONGO_URI"))
 db = client["authndb"]
 users = db["users"]
 
-# 🔬 Send a prompt to Gemini and return the plain JSON string response
+# Send a prompt to Gemini and return the plain JSON string response
 def get_llm_response(prompt):
     try:
         full_prompt = (
@@ -32,14 +32,14 @@ def get_llm_response(prompt):
     except Exception as e:
         return f"Error generating response: {str(e)}"
 
-# 🤖 Parse LLM output into a Python dictionary list (schedule entries)
+# Parse LLM output into a Python dictionary list (schedule entries)
 def parse_schedule_from_llm_response(response_text):
     try:
         return json.loads(response_text)
     except json.JSONDecodeError:
         return []
 
-# ⚙️ Core: Take user prompt ➔ get LLM schedule JSON ➔ update DB
+# Core: Take user prompt ➔ get LLM schedule JSON ➔ update DB
 
 def update_schedule_from_prompt(netid, prompt):
     llm_response = get_llm_response(prompt)

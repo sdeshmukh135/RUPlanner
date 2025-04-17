@@ -6,8 +6,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import time
 import os
-from pymongo import MongoClient
-from werkzeug.security import generate_password_hash
 from dotenv import load_dotenv
 import json
 
@@ -211,7 +209,7 @@ def authenticate_service(driver, user=None, username=None, log=False, website_ur
             print("Unexpected error during authentication.")
             return False, None
 
-def get_user_cas_data(driver, log=False):
+def get_user_cas_data(driver, username=None, log=False):
     """
     Scrapes basic user data by authenticating the user into CAS.
     
@@ -232,7 +230,7 @@ def get_user_cas_data(driver, log=False):
         'rutgersEduRUID': 'RUID',
         'rutgersEduStudentUnit': 'unitName',
         'rutgersEduStudentUnitCode': 'unitCode',
-        'uid': 'netID',
+        'uid': 'netid',
         'mail': 'email'
     }
     
@@ -257,48 +255,35 @@ def get_user_cas_data(driver, log=False):
             
         value = value_element.text[1:-1]  # Remove quotes
         user_profile[attr] = value
-        #added by Varshini starts: to create a user schema once they log in for first time
-        # Check if user exists in MongoDB; if not, create a new one
-    load_dotenv()
-    client = MongoClient(os.getenv("MONGO_URI"))
-    db = client["rumad"]
-    users = db["users"]
-
-    netid = user_profile.get("netID")
-    if netid and not users.find_one({"netid": netid}):
-        print(f"[MongoDB] Creating new user record for {netid}")
-        users.insert_one({
-            "netid": netid,
-            "password_hash": generate_password_hash("placeholder123"),  # Replace later
-            "current_schedule": "",
-            "past_schedules": [],
-            "prompt_history": [],
-            "friends": {}  # maps friend's netid -> latest .ics string
-        })
-
-        #added by Varshini ends
+    
+    # If the provided username does not match, return None
+    if username and username != user_profile['netid']:
+        if log: print(f"Provided username '{username}' does not match " +
+                      f"authenticated user {user_profile['netid']}.")
+        return None
+    
     return user_profile
 
 def scrape(fn, username=None, log=False, website_url=SERVICE['cas'], **kwargs):
     """
     Run a Selenium-based web scraping function within an authenticated Rutgers CAS session.
 
-    Parameters:
-    - fn (function): The scraping function to execute. Must accept (driver,
-    username, log) plus any additional kwargs.
-    - username (str, optional): NetID username. If not provided, it will be
-    loaded via get_user_login().
-    - log (bool, optional): Whether to log debug output during authentication
-    and scraping. Defaults to False.
-    - website_url (str, optional): URL for CAS-protected page to check
-    authentication. Defaults to CAS login URL.
-    - **kwargs: Arbitrary keyword arguments to pass to the scraping function `fn`.
+    Args:
+        - fn (function): The scraping function to execute. Must accept (driver,
+        username, log) plus any additional kwargs.
+        - username (str, optional): NetID username. If not provided, it will be
+        loaded via get_user_login().
+        - log (bool, optional): Whether to log debug output during authentication
+        and scraping. Defaults to False.
+        - website_url (str, optional): URL for CAS-protected page to check
+        authentication. Defaults to CAS login URL.
+        - **kwargs: Arbitrary keyword arguments to pass to the scraping function `fn`.
 
     Returns:
-    - output (Any): The return value from the scraping function `fn`.
+        - output (Any): The return value from the scraping function `fn`.
     """
 
-    # Load environment variables (e.g., for login credentials)
+    # Load environment variables (for login credentials)
     load_dotenv()
     user_login = None
 
@@ -323,15 +308,15 @@ def scrape(fn, username=None, log=False, website_url=SERVICE['cas'], **kwargs):
         # If not already logged in to CAS, perform authentication
         if not is_authenticated(driver, website_url=website_url):
             authenticated_driver, _ = authenticate_service(
-                driver, user=user_login, username=username, log=True
+                driver, user=user_login, username=username, log=log
             )
             if authenticated_driver is False or authenticated_driver is None:
                 raise SystemExit  # Stop execution if authentication fails
 
         # Call the scraping function with the prepared driver and credentials
-        output = fn(driver, username, log=log, **kwargs)
+        output = fn(driver, username=username, log=log, **kwargs)
 
     finally:
         # Always quit the browser, even if errors occur
         driver.quit()
-        # return output
+        return output

@@ -9,7 +9,7 @@ client = MongoClient(os.getenv("MONGO_URI"))
 db = client["authndb"]
 users = db["users"]
 
-netid = "pr572"
+netid = "am3606"
 password = "test123"
 
 user_doc = {

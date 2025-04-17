@@ -64,7 +64,7 @@ def process_semester(rows, academic_years, i, semester_key, start_key, end_key, 
     
     return data
 
-def main():
+def scrape_academic_calendar(log=False):
     url = "https://scheduling.rutgers.edu/scheduling/academic-calendar"
     response = requests.get(url)
     if response.status_code != 200:
@@ -97,7 +97,10 @@ def main():
     
     with open("academic_calendar.json", "w") as f:
         json.dump(calendar_data, f, indent=2)
-    print("Data successfully written to academic_calendar.json")
+    if log: print("Data successfully written to academic_calendar.json")
+
+def main():
+    scrape_academic_calendar(log=True)
 
 if __name__ == "__main__":
     main()

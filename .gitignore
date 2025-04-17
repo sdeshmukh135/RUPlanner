@@ -1,0 +1,73 @@
+# Bytecode and cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+.env/
+.envrc
+*.egg-info/
+*.egg
+
+# Environment variables & secrets
+.env
+*.key
+*.pem
+secrets.json
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Logs & debug
+*.log
+*.out
+*.err
+debug.log
+
+# Database & cache
+*.sqlite3
+*.db
+*.db-journal
+
+# Scraper output files (optional)
+*.json
+*.csv
+*.xlsx
+data_output/
+screenshots/
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# IDE/editor folders
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test coverage or test results
+htmlcov/
+coverage.xml
+*.cover
+*.py,cover
+.tox/
+
+# Node.js frontend (if using React Native or similar)
+node_modules/
+dist/
+build/
+*.lock
+npm-debug.log*
+
+# Compiled artifacts
+*.so
+*.dll
+*.o
+*.a
+*.exe
+
+# Misc
+.cache/
+*.bak
