@@ -10,3 +10,4 @@ google-auth-httplib2
 ics
 bs4
 requests
+werkzeug

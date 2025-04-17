@@ -64,7 +64,7 @@ def get_user_login():
 def read_user_cookies(username):
     # Try reading the cookies; if no cookies, return None
     try:
-        with open(f"{username}/cookies.json", "r") as file:
+        with open(f"./.users/{username}/cookies.json", "r") as file:
             return json.load(file)
     except FileNotFoundError:
         return None  # no cookies.json file
@@ -72,9 +72,9 @@ def read_user_cookies(username):
 # Writes the user cookies to cookies.json
 def write_user_cookies(username, cookies_dict):
     # Make {username} directory if it doesn't already exist
-    os.makedirs(f"{username}", exist_ok=True)
+    os.makedirs(f"./.users/{username}", exist_ok=True)
     # Write cookies to the directory
-    with open(f"{username}/cookies.json", "w") as file:
+    with open(f"./.users/{username}/cookies.json", "w") as file:
         json.dump(cookies_dict, file, indent=2)
 
 # Checks if the driver is authenticated

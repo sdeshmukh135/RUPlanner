@@ -8,10 +8,6 @@ from ics.grammar.parse import ContentLine
 from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-# Load academic calendar data
-with open("academic_calendar.json") as f:
-    ACADEMIC_CALENDAR = json.load(f)
-
 # Define semester code
 def semester_code(semester):
     """ Converts a semester string like 'Fall 2025' to its Rutgers semester code (e.g., '92025'). """
@@ -356,6 +352,10 @@ def convert_webreg_json_to_ics(schedule_data, ics_output_path, log=False):
     semester = schedule_data.get("semester")
     calendar = Calendar()
     courses = schedule_data["courses"]
+
+    # Load academic calendar data
+    with open("academic_calendar.json") as f:
+        ACADEMIC_CALENDAR = json.load(f)
 
     # Get the start and end of the semester
     semester_info = ACADEMIC_CALENDAR.get(semester)

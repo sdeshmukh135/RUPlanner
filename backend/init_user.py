@@ -1,15 +1,25 @@
-from ..scrapers import authenticate as auth
-from ..scrapers.webreg import semester_code, webreg_schedule, convert_webreg_json_to_ics
 from pymongo import MongoClient
 from werkzeug.security import generate_password_hash
 from dotenv import load_dotenv
 import os
+import sys
+
+# Add RUPlanner (parent of backend/) to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from scrapers import authenticate as auth
+from scrapers.webreg import semester_code, webreg_schedule, convert_webreg_json_to_ics
+from scrapers.academic_calendar import scrape_academic_calendar
 
 # Load env and connect to MongoDB
 load_dotenv()
 client = MongoClient(os.getenv("MONGO_URI"))
 db = client["authndb"]
 users = db["users"]
+
+# If no academic_calendar.json exists, scrape it and create one
+if not os.path.exists("./scrapers/academic_calendar.json"):
+    scrape_academic_calendar(log=True)
 
 def create_user(user_profile, log=False):
     """
@@ -54,6 +64,9 @@ def save_ics_to_user(netid, ics_path):
 def init_user(username, semesters=["Fall 2025"]):
     # Initialize a new user in the MongoDB database
     user_profile = auth.scrape(auth.get_user_cas_data, username=username, log=True)
+    if not user_profile:
+        print("Something went wrong. Try again.")
+        return
     create_user(user_profile)
 
     # Scrape the schedule for each semester
